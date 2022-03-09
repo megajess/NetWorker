@@ -7,7 +7,7 @@
 
 import Foundation
 
-enum NetworkRequestableError: Error {
+public enum NetworkRequestableError: Error {
     case invalidURL
     
     var message: String {
@@ -18,7 +18,7 @@ enum NetworkRequestableError: Error {
     }
 }
 
-protocol NetworkRequestable {
+public protocol NetworkRequestable {
     static var urlString: String { get }
     static var method: HTTPMethod { get }
     static var contentType: HTTPContentType { get }

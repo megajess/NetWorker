@@ -7,7 +7,7 @@
 
 import Foundation
 
-enum HTTPMethod: String {
+public enum HTTPMethod: String {
     case get = "GET"
     case post = "POST"
     case put = "PUT"
@@ -15,12 +15,12 @@ enum HTTPMethod: String {
     case delete = "DELETE"
 }
 
-enum HTTPContentType: String {
+public enum HTTPContentType: String {
     case applicationJson = "application/json"
     case multipartFormData = "multipart/form-data"
 }
 
-enum ParamType {
+public enum ParamType {
     case path([String : Any])
     case query([String : Any])
     case body([String : Any])
