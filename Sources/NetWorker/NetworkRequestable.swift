@@ -27,9 +27,9 @@ public protocol NetworkRequestable {
     static func buildRequest(params: [ParamType]?) throws -> URLRequest
 }
 
-extension NetworkRequestable {
+public extension NetworkRequestable {
     // TODO: JRS: Use URLComponents?
-    static func url(params: [ParamType]?) -> URL? {
+    public static func url(params: [ParamType]?) -> URL? {
 
         guard let params = params else {
             return URL(string: Self.urlString)
@@ -63,7 +63,7 @@ extension NetworkRequestable {
         return URL(string: finalURLString)
     }
     
-    static func buildRequest(params: [ParamType]?) throws -> URLRequest {
+    public static func buildRequest(params: [ParamType]?) throws -> URLRequest {
         
         guard let url = url(params: params) else {
             throw NetworkRequestableError.invalidURL
