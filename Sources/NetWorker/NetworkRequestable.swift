@@ -27,7 +27,7 @@ public protocol NetworkRequestable {
     static func buildRequest(params: [ParamType]?) throws -> URLRequest
 }
 
-public extension NetworkRequestable {
+extension NetworkRequestable {
     // TODO: JRS: Use URLComponents?
     public static func url(params: [ParamType]?) -> URL? {
 
