@@ -7,13 +7,13 @@
 
 import Foundation
 
-final class NetWorker {
+public class NetWorker {
     
     private init() {}
     
-    static public var current: NetWorker = NetWorker()
+    static var current: NetWorker = NetWorker()
     
-    public func process<T: Codable>(_ requestBuilder: NetworkRequestable.Type, expecting: T.Type, using params: [ParamType]?, completion: @escaping (T?) -> Void) {
+    func process<T: Codable>(_ requestBuilder: NetworkRequestable.Type, expecting: T.Type, using params: [ParamType]?, completion: @escaping (T?) -> Void) {
         do {
             let request = try requestBuilder.buildRequest(params: params)
             let task = URLSession.shared.dataTask(with: request) { data, response, error in
