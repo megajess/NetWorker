@@ -11,7 +11,7 @@ public class NetWorker {
     
     private init() {}
     
-    static var current: NetWorker = NetWorker()
+    public static var current: NetWorker = NetWorker()
     
     func process<T: Codable>(_ requestBuilder: NetworkRequestable.Type, expecting: T.Type, using params: [ParamType]?, completion: @escaping (T?) -> Void) {
         do {
