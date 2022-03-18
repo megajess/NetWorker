@@ -13,7 +13,7 @@ public class NetWorker {
     
     public static var current: NetWorker = NetWorker()
     
-    public func process<T: Codable>(_ requestBuilder: NetworkRequestable.Type, using urlParams: [URLParamType]?, with body: AnyEncodable?, expecting: T.Type?, completion: @escaping (T?, Int?) -> Void) {
+    public func process<T: Codable>(_ requestBuilder: NetworkRequestable.Type, urlParams: [URLParamType]?, body: AnyEncodable?, expecting: T.Type?, completion: @escaping (T?, Int?) -> Void) {
         do {
             let request = try requestBuilder.buildRequest(urlParams, body)
             let task = URLSession.shared.dataTask(with: request) { data, response, error in
