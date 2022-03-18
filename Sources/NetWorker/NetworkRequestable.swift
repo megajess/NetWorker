@@ -24,7 +24,7 @@ public protocol NetworkRequestable {
     static var contentType: HTTPContentType { get }
     
     static func url(params: [URLParamType]?) -> URL?
-    static func buildRequest(params: [URLParamType]?, body: AnyEncodable?) throws -> URLRequest
+    static func buildRequest(with params: [URLParamType]?, and body: AnyEncodable?) throws -> URLRequest
 }
 
 extension NetworkRequestable {
