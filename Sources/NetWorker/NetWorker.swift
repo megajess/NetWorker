@@ -13,19 +13,25 @@ public class NetWorker {
     
     public static var current: NetWorker = NetWorker()
     
-    public func process<T: Codable>(_ requestBuilder: NetworkRequestable.Type, expecting: T.Type, using params: [ParamType]?, completion: @escaping (T?) -> Void) {
+    public func process<T: Codable>(_ requestBuilder: NetworkRequestable.Type, using urlParams: [URLParamType]?, with body: AnyEncodable?, expecting: T.Type?, completion: @escaping (T?, Int?) -> Void) {
         do {
-            let request = try requestBuilder.buildRequest(params: params)
+            let request = try requestBuilder.buildRequest(params: urlParams, body: body)
             let task = URLSession.shared.dataTask(with: request) { data, response, error in
+                let responseCode = (response as? HTTPURLResponse)?.statusCode
+                
                 guard error == nil, let data = data else {
-                    completion(nil)
+                    completion(nil, responseCode)
                     return
                 }
                 
-                if let response = try? JSONDecoder().decode(T.self, from: data) {
-                    completion(response)
+                if let expecting = expecting {
+                    if let response = try? JSONDecoder().decode(expecting.self, from: data) {
+                        completion(response, responseCode)
+                    } else {
+                        completion(nil, responseCode)
+                    }
                 } else {
-                    completion(nil)
+                    completion(nil, responseCode)
                 }
             }
             
@@ -36,6 +42,5 @@ public class NetWorker {
         } catch let error {
             print(error.localizedDescription)
         }
-        
     }
 }

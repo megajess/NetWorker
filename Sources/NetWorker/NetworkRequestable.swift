@@ -23,13 +23,13 @@ public protocol NetworkRequestable {
     static var method: HTTPMethod { get }
     static var contentType: HTTPContentType { get }
     
-    static func url(params: [ParamType]?) -> URL?
-    static func buildRequest(params: [ParamType]?) throws -> URLRequest
+    static func url(params: [URLParamType]?) -> URL?
+    static func buildRequest(params: [URLParamType]?, body: AnyEncodable?) throws -> URLRequest
 }
 
 extension NetworkRequestable {
     // TODO: JRS: Use URLComponents?
-    public static func url(params: [ParamType]?) -> URL? {
+    public static func url(params: [URLParamType]?) -> URL? {
 
         guard let params = params else {
             return URL(string: Self.urlString)
@@ -53,9 +53,7 @@ extension NetworkRequestable {
                 }
                 
                 finalURLString = replacedParts.joined(separator: "/")
-            case .query(let kvp):
-                finalURLString = Self.urlString
-            case .body(let kvp):
+            case .query(_):
                 finalURLString = Self.urlString
             }
         }
@@ -63,13 +61,17 @@ extension NetworkRequestable {
         return URL(string: finalURLString)
     }
     
-    public static func buildRequest(params: [ParamType]?) throws -> URLRequest {
+    public static func buildRequest(with params: [URLParamType]?, and body: AnyEncodable?) throws -> URLRequest {
         
         guard let url = url(params: params) else {
             throw NetworkRequestableError.invalidURL
         }
         
         var request = URLRequest(url: url)
+        
+        if let body = body, let bodyData = try? JSONEncoder().encode(body.self) {
+            request.httpBody = bodyData
+        }
         
         request.cachePolicy = .reloadIgnoringLocalAndRemoteCacheData
         request.setValue(contentType.rawValue, forHTTPHeaderField: "Content-Type")
