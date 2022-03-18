@@ -24,7 +24,7 @@ public protocol NetworkRequestable {
     static var contentType: HTTPContentType { get }
     
     static func url(params: [URLParamType]?) -> URL?
-    static func buildRequest(with params: [URLParamType]?, and body: AnyEncodable?) throws -> URLRequest
+    static func buildRequest(_ params: [URLParamType]?, _ body: AnyEncodable?) throws -> URLRequest
 }
 
 extension NetworkRequestable {
@@ -61,7 +61,7 @@ extension NetworkRequestable {
         return URL(string: finalURLString)
     }
     
-    public static func buildRequest(with params: [URLParamType]?, and body: AnyEncodable?) throws -> URLRequest {
+    public static func buildRequest(_ params: [URLParamType]?, _ body: AnyEncodable?) throws -> URLRequest {
         
         guard let url = url(params: params) else {
             throw NetworkRequestableError.invalidURL
