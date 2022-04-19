@@ -13,7 +13,7 @@ public class NetWorker {
     
     public static var current: NetWorker = NetWorker()
     
-    public func process<T: Codable>(_ requestBuilder: NetworkRequestable.Type, urlParams: [URLParamType]? = nil, body: AnyEncodable? = nil, expecting: T.Type?, completion: @escaping (T?, Int?) -> Void) {
+    public func process<T: Codable>(_ requestBuilder: NetworkRequestable.Type, dateFormatter: DateFormatter? = nil, urlParams: [URLParamType]? = nil, body: AnyEncodable? = nil, expecting: T.Type?, completion: @escaping (T?, Int?) -> Void) {
         do {
             let request = try requestBuilder.buildRequest(urlParams, body)
             let task = URLSession.shared.dataTask(with: request) { data, response, error in
@@ -24,8 +24,14 @@ public class NetWorker {
                     return
                 }
                 
+                let decoder = JSONDecoder()
+                
+                if let dateFormatter = dateFormatter {
+                    decoder.dateDecodingStrategy = .formatted(dateFormatter)
+                }
+                
                 if let expecting = expecting {
-                    if let response = try? JSONDecoder().decode(expecting.self, from: data) {
+                    if let response = try? decoder.decode(expecting.self, from: data) {
                         completion(response, responseCode)
                     } else {
                         completion(nil, responseCode)
