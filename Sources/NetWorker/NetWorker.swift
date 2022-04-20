@@ -1,5 +1,5 @@
 //
-//  NetWorker.swift
+//  JSONDecoderWithCustomDateFormatters.swift
 //  NetWorker
 //
 //  Created by Jesse Suter on 3/9/22.
@@ -13,80 +13,62 @@ public class NetWorker {
     
     public static var current: NetWorker = NetWorker()
     
-    public func process<T: Codable>(_ requestBuilder: NetworkRequestable.Type, urlParams: [URLParamType]? = nil, body: AnyEncodable? = nil, expecting: T.Type?, dateFormatters: [DateFormatter]? = nil, completion: @escaping (T?, Int?) -> Void) {
+    public func process<T: Codable>(
+        _ requestBuilder: NetworkRequestable.Type,
+        urlParams: [URLParamType]? = nil,
+        body: AnyEncodable? = nil,
+        expecting: T.Type?,
+        dateFormatters: [DateFormatter]? = nil,
+        completion: @escaping (T?, Int?, Error?) -> Void
+    ) {
+        let decoder = JSONDecoderWithCustomDateFormatters()
+
+        if let dateFormatters = dateFormatters {
+            decoder.setDateDecodingStrategyFormatters(dateFormatters)
+        }
+        
+        self.process(
+            requestBuilder,
+            urlParams: urlParams,
+            body: body,
+            expecting: expecting,
+            decoder: decoder,
+            completion: completion)
+    }
+    
+    public func process<T: Codable>(
+        _ requestBuilder: NetworkRequestable.Type,
+        urlParams: [URLParamType]? = nil,
+        body: AnyEncodable? = nil,
+        expecting: T.Type?,
+        decoder: JSONDecoder,
+        completion: @escaping (T?, Int?, Error?) -> Void
+    ) {
         do {
             let request = try requestBuilder.buildRequest(urlParams, body)
             let task = URLSession.shared.dataTask(with: request) { data, response, error in
                 let responseCode = (response as? HTTPURLResponse)?.statusCode
                 
                 guard error == nil, let data = data else {
-                    completion(nil, responseCode)
+                    completion(nil, responseCode, error)
                     return
                 }
                 
-                let decoder = JSONDecoderWithCustomdateFormatters()
-                
-                if let dateFormatters = dateFormatters {
-                    decoder.setDateDecodingStrategyFormatters(dateFormatters)
-                }
-                
-                if let expecting = expecting {
-                    if let response = try? decoder.decode(expecting.self, from: data) {
-                        completion(response, responseCode)
+                do {
+                    if let expecting = expecting {
+                        let response = try decoder.decode(expecting.self, from: data)
+                        completion(response, responseCode, nil)
                     } else {
-                        completion(nil, responseCode)
+                        completion(nil, responseCode, nil)
                     }
-                } else {
-                    completion(nil, responseCode)
+                } catch let decodeError {
+                    completion(nil, nil, decodeError)
                 }
             }
             
             task.resume()
-            
-        } catch let error as NetworkRequestableError {
-            print(error.message)
         } catch let error {
-            print(error.localizedDescription)
+            completion(nil, nil, error)
         }
-    }
-}
-
-class JSONDecoderWithCustomdateFormatters: JSONDecoder {
-    var dateDecodingStrategyFormatters: [DateFormatter]?
-    
-    override init() {
-        super.init()
-        
-        self.dateDecodingStrategy = .custom({ decoder in
-            try self.dateDecodingStrategy(decoder)
-        })
-    }
-    
-    func dateDecodingStrategy(_ decoder: Decoder) throws -> Date {
-        guard let dateDecodingStrategyFormatters = dateDecodingStrategyFormatters else {
-            let container = try decoder.singleValueContainer()
-            let dateString = try container.decode(String.self)
-            
-            if let date = DateFormatter().date(from: dateString) {
-                return date
-            }
-            
-            throw DecodingError.dataCorruptedError(in: container, debugDescription: "Cannot decode date string \(dateString)")
-        }
-        
-        let container = try decoder.singleValueContainer()
-        let dateString = try container.decode(String.self)
-        
-        for formatter in dateDecodingStrategyFormatters {
-            if let date = formatter.date(from: dateString) {
-                return date
-            }
-        }
-        
-        throw DecodingError.dataCorruptedError(in: container, debugDescription: "Cannot decode date string \(dateString)")
-    }
-    
-    func setDateDecodingStrategyFormatters(_ dateFormatters: [DateFormatter]) {
-        self.dateDecodingStrategyFormatters = dateFormatters
     }
 }
