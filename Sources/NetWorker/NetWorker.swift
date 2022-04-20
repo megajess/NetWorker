@@ -26,9 +26,9 @@ public class NetWorker {
                 
                 let decoder = JSONDecoder()
                 
-                if let dateFormatter = dateFormatter {
-                    decoder.dateDecodingStrategy = .formatted(dateFormatter)
-                }
+//                if let dateFormatter = dateFormatter {
+//                    decoder.dateDecodingStrategy = .formatted(dateFormatter)
+//                }
                 
                 if let expecting = expecting {
                     if let response = try? decoder.decode(expecting.self, from: data) {
