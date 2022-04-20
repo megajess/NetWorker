@@ -13,7 +13,7 @@ public class NetWorker {
     
     public static var current: NetWorker = NetWorker()
     
-    public func process<T: Codable>(_ requestBuilder: NetworkRequestable.Type, urlParams: [URLParamType]? = nil, body: AnyEncodable? = nil, expecting: T.Type?, dateFormatter: DateFormatter? = nil, completion: @escaping (T?, Int?) -> Void) {
+    public func process<T: Codable>(_ requestBuilder: NetworkRequestable.Type, urlParams: [URLParamType]? = nil, body: AnyEncodable? = nil, expecting: T.Type?, dateFormatters: [DateFormatter]? = nil, completion: @escaping (T?, Int?) -> Void) {
         do {
             let request = try requestBuilder.buildRequest(urlParams, body)
             let task = URLSession.shared.dataTask(with: request) { data, response, error in
@@ -24,10 +24,10 @@ public class NetWorker {
                     return
                 }
                 
-                let decoder = JSONDecoder()
+                let decoder = JSONDecoderWithCustomdateFormatters()
                 
-                if let dateFormatter = dateFormatter {
-                    decoder.dateDecodingStrategy = .formatted(dateFormatter)
+                if let dateFormatters = dateFormatters {
+                    decoder.setDateDecodingStrategyFormatters(dateFormatters)
                 }
                 
                 if let expecting = expecting {
@@ -47,6 +47,25 @@ public class NetWorker {
             print(error.message)
         } catch let error {
             print(error.localizedDescription)
+        }
+    }
+}
+
+class JSONDecoderWithCustomdateFormatters: JSONDecoder {
+    var dateDecodingStrategyFormatters: [DateFormatter]?
+    
+    func setDateDecodingStrategyFormatters(_ dateFormatters: [DateFormatter]) {
+        self.dateDecodingStrategy = .custom { decoder in
+            let container = try decoder.singleValueContainer()
+            let dateString = try container.decode(String.self)
+
+            for formatter in dateFormatters {
+                if let date = formatter.date(from: dateString) {
+                    return date
+                }
+            }
+
+            throw DecodingError.dataCorruptedError(in: container, debugDescription: "Cannot decode date string \(dateString)")
         }
     }
 }
