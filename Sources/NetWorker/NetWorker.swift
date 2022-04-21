@@ -13,21 +13,16 @@ public class NetWorker {
     
     public static var current: NetWorker = NetWorker()
     
-    public func process<T: Codable>(
+    public func processJSONRequest<T: Codable>(
         _ requestBuilder: NetworkRequestable.Type,
         urlParams: [URLParamType]? = nil,
         body: AnyEncodable? = nil,
         expecting: T.Type?,
-        dateFormatters: [DateFormatter]? = nil,
         completion: @escaping (T?, Int?, Error?) -> Void
     ) {
         let decoder = JSONDecoderWithCustomDateFormatters()
-
-        if let dateFormatters = dateFormatters {
-            decoder.setDateDecodingStrategyFormatters(dateFormatters)
-        }
         
-        self.process(
+        self.processJSONRequest(
             requestBuilder,
             urlParams: urlParams,
             body: body,
@@ -36,7 +31,28 @@ public class NetWorker {
             completion: completion)
     }
     
-    public func process<T: Codable>(
+    public func processJSONRequest<T: Codable>(
+        _ requestBuilder: NetworkRequestable.Type,
+        urlParams: [URLParamType]? = nil,
+        body: AnyEncodable? = nil,
+        expecting: T.Type?,
+        dateFormatters: [DateFormatter],
+        completion: @escaping (T?, Int?, Error?) -> Void
+    ) {
+        let decoder = JSONDecoderWithCustomDateFormatters()
+
+        decoder.setDateDecodingStrategyFormatters(dateFormatters)
+        
+        self.processJSONRequest(
+            requestBuilder,
+            urlParams: urlParams,
+            body: body,
+            expecting: expecting,
+            decoder: decoder,
+            completion: completion)
+    }
+    
+    public func processJSONRequest<T: Codable>(
         _ requestBuilder: NetworkRequestable.Type,
         urlParams: [URLParamType]? = nil,
         body: AnyEncodable? = nil,
@@ -47,19 +63,19 @@ public class NetWorker {
         do {
             let request = try requestBuilder.buildRequest(urlParams, body)
             let task = URLSession.shared.dataTask(with: request) { data, response, error in
-                let responseCode = (response as? HTTPURLResponse)?.statusCode
+                let responseStatusCode = (response as? HTTPURLResponse)?.statusCode
                 
                 guard error == nil, let data = data else {
-                    completion(nil, responseCode, error)
+                    completion(nil, responseStatusCode, error)
                     return
                 }
                 
                 do {
                     if let expecting = expecting {
                         let response = try decoder.decode(expecting.self, from: data)
-                        completion(response, responseCode, nil)
+                        completion(response, responseStatusCode, nil)
                     } else {
-                        completion(nil, responseCode, nil)
+                        completion(nil, responseStatusCode, nil)
                     }
                 } catch let decodeError {
                     completion(nil, nil, decodeError)
