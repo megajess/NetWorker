@@ -21,14 +21,14 @@ public enum NetworkRequestableError: Error {
 public protocol NetworkRequestable {
     static var urlString: String { get }
     static var method: HTTPMethod { get }
-    static var contentType: HTTPContentType { get }
+//    static var contentType: HTTPContentType { get }
     
     static func url(params: [URLParamType]?) -> URL?
     static func buildRequest(_ params: [URLParamType]?, _ body: AnyEncodable?) throws -> URLRequest
 }
 
 extension NetworkRequestable {
-    // TODO: JRS: Use URLComponents?
+    // TODO: Use URLComponents?
     public static func url(params: [URLParamType]?) -> URL? {
 
         guard let params = params else {
@@ -74,7 +74,7 @@ extension NetworkRequestable {
         }
         
         request.cachePolicy = .reloadIgnoringLocalAndRemoteCacheData
-        request.setValue(contentType.rawValue, forHTTPHeaderField: "Content-Type")
+        request.setValue("application/json", forHTTPHeaderField: "Content-Type")
         
         return request
     }
