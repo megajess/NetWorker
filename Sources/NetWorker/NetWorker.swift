@@ -59,7 +59,8 @@ public class NetWorker {
         urlParams: [URLParamType]? = nil,
         username: String,
         password: String,
-        completion: @escaping (Int?, Error?) -> Void
+        expecting: T.Type?,
+        completion: @escaping (T?, Int?, Error?) -> Void
     ) {
         guard let loginString = "\(username):\(password)"
             .data(using: .utf8)?
@@ -77,7 +78,7 @@ public class NetWorker {
         
         self.processJSONRequest(
             request,
-            expecting: nil,
+            expecting: expecting,
             decoder: JSONDecoderWithCustomDateFormatters(),
             completion: completion)
     }
