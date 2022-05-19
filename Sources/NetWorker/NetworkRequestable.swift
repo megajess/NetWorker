@@ -75,6 +75,7 @@ extension NetworkRequestable {
         
         request.cachePolicy = .reloadIgnoringLocalAndRemoteCacheData
         request.setValue("application/json", forHTTPHeaderField: "Content-Type")
+        request.httpMethod = self.method.rawValue
         
         return request
     }
