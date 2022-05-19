@@ -59,7 +59,7 @@ public class NetWorker {
         urlParams: [URLParamType]? = nil,
         username: String,
         password: String,
-        completion: @escaping (T?, Int?, Error?) -> Void
+        completion: @escaping (Int?, Error?) -> Void
     ) {
         guard let loginString = "\(username):\(password)"
             .data(using: .utf8)?
